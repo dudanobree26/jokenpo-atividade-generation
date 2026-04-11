@@ -1,0 +1,221 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); }
+  .screen { display: none; padding: 1.5rem 1rem; }
+  .screen.active { display: block; }
+  h1 { font-size: 22px; font-weight: 500; color: var(--color-text-primary); text-align: center; margin-bottom: 0.5rem; }
+  .sub { font-size: 14px; color: var(--color-text-secondary); text-align: center; margin-bottom: 1.5rem; }
+  .cat-big { text-align: center; font-size: 64px; margin-bottom: 1rem; }
+  label { font-size: 13px; color: var(--color-text-secondary); display: block; margin-bottom: 6px; margin-top: 1rem; }
+  input[type=text] { width: 100%; }
+  .btn-main { display: block; width: 100%; margin-top: 1.5rem; padding: 10px; font-size: 15px; font-weight: 500; cursor: pointer; border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); transition: background 0.15s; }
+  .btn-main:hover { background: var(--color-background-secondary); }
+  .btn-main:active { transform: scale(0.98); }
+  .player-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+  .player-card { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1rem; text-align: center; border: 0.5px solid var(--color-border-tertiary); }
+  .player-name { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .player-score { font-size: 28px; font-weight: 500; color: var(--color-text-primary); }
+  .player-cat { font-size: 36px; }
+  .moves-section { margin-bottom: 1rem; }
+  .moves-label { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 8px; }
+  .moves-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .move-btn { padding: 10px 4px; font-size: 13px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary); color: var(--color-text-primary); cursor: pointer; transition: all 0.12s; text-align: center; }
+  .move-btn:hover { background: var(--color-background-secondary); border-color: var(--color-border-secondary); }
+  .move-btn.selected { border: 1.5px solid var(--color-border-primary); background: var(--color-background-secondary); }
+  .move-btn .move-icon { font-size: 24px; display: block; margin-bottom: 4px; }
+  .divider { border: none; border-top: 0.5px solid var(--color-border-tertiary); margin: 1rem 0; }
+  .result-box { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1.25rem; text-align: center; margin-bottom: 1rem; border: 0.5px solid var(--color-border-tertiary); }
+  .result-title { font-size: 18px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 6px; }
+  .result-sub { font-size: 13px; color: var(--color-text-secondary); }
+  .moves-reveal { display: flex; justify-content: space-around; align-items: center; font-size: 13px; color: var(--color-text-secondary); margin: 1rem 0; }
+  .moves-reveal .move-show { text-align: center; }
+  .moves-reveal .move-show span:first-child { font-size: 36px; display: block; }
+  .vs-text { font-size: 14px; font-weight: 500; color: var(--color-text-secondary); }
+  .rules-list { list-style: none; }
+  .rules-list li { font-size: 14px; color: var(--color-text-secondary); padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); display: flex; gap: 8px; align-items: center; }
+  .rules-list li:last-child { border-bottom: none; }
+  .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px; background: var(--color-background-info); color: var(--color-text-info); margin-left: auto; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .step-indicator { display: flex; gap: 6px; justify-content: center; margin-bottom: 1rem; }
+  .step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-border-secondary); }
+  .step-dot.active { background: var(--color-text-primary); }
+  #p2-section { display: none; }
+</style>
+
+<div id="screen-names" class="screen active">
+  <div class="cat-big">🐱</div>
+  <h1>Jo-ken-pô</h1>
+  <p class="sub">O clássico jogo dos gatinhos</p>
+  <label>Nome do jogador 1</label>
+  <input type="text" id="inp1" placeholder="ex: Mia" maxlength="16">
+  <label>Nome do jogador 2</label>
+  <input type="text" id="inp2" placeholder="ex: Nori" maxlength="16">
+  <button class="btn-main" onclick="startGame()">Começar jogo ↗</button>
+  <button class="btn-main" style="margin-top:8px; font-size:13px; color:var(--color-text-secondary);" onclick="showRules()">Ver regras</button>
+</div>
+
+<div id="screen-rules" class="screen">
+  <h1>Regras</h1>
+  <p class="sub">Como funciona o jogo</p>
+  <ul class="rules-list">
+    <li><span>🪨</span> Pedra ganha de tesoura <span class="badge">esmaga</span></li>
+    <li><span>📄</span> Papel ganha de pedra <span class="badge">cobre</span></li>
+    <li><span>✂️</span> Tesoura ganha de papel <span class="badge">corta</span></li>
+    <li><span>🤝</span> Jogadas iguais = empate</li>
+  </ul>
+  <button class="btn-main" onclick="goTo('screen-names')">Voltar</button>
+</div>
+
+<div id="screen-p1" class="screen">
+  <div class="player-row">
+    <div class="player-card">
+      <div class="player-cat">🐱</div>
+      <div class="player-name" id="display-p1"></div>
+      <div class="player-score" id="score1">0</div>
+    </div>
+    <div class="player-card">
+      <div class="player-cat">🐾</div>
+      <div class="player-name" id="display-p2"></div>
+      <div class="player-score" id="score2">0</div>
+    </div>
+  </div>
+  <div class="step-indicator">
+    <div class="step-dot active" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+  </div>
+  <div class="moves-section">
+    <div class="moves-label" id="p1-label">Escolha sua jogada:</div>
+    <div class="moves-grid">
+      <button class="move-btn" onclick="selectMove(1,'pedra')"><span class="move-icon">🪨</span>Pedra</button>
+      <button class="move-btn" onclick="selectMove(1,'papel')"><span class="move-icon">📄</span>Papel</button>
+      <button class="move-btn" onclick="selectMove(1,'tesoura')"><span class="move-icon">✂️</span>Tesoura</button>
+    </div>
+  </div>
+  <div id="p2-section">
+    <hr class="divider">
+    <div class="moves-section">
+      <div class="moves-label" id="p2-label">Escolha sua jogada:</div>
+      <div class="moves-grid">
+        <button class="move-btn" onclick="selectMove(2,'pedra')"><span class="move-icon">🪨</span>Pedra</button>
+        <button class="move-btn" onclick="selectMove(2,'papel')"><span class="move-icon">📄</span>Papel</button>
+        <button class="move-btn" onclick="selectMove(2,'tesoura')"><span class="move-icon">✂️</span>Tesoura</button>
+      </div>
+    </div>
+  </div>
+  <button class="btn-main" style="display:none" id="btn-judge" onclick="judge()">Revelar resultado ↗</button>
+</div>
+
+<div id="screen-result" class="screen">
+  <div class="result-box">
+    <div class="result-title" id="result-title">Empate!</div>
+    <div class="result-sub" id="result-sub">Nenhum gatinho ganhou desta vez</div>
+  </div>
+  <div class="moves-reveal">
+    <div class="move-show">
+      <span id="icon1">🪨</span>
+      <span id="rname1">—</span>
+    </div>
+    <div class="vs-text">vs</div>
+    <div class="move-show">
+      <span id="icon2">🪨</span>
+      <span id="rname2">—</span>
+    </div>
+  </div>
+  <hr class="divider">
+  <div class="player-row">
+    <div class="player-card">
+      <div class="player-cat">🐱</div>
+      <div class="player-name" id="rscore-p1"></div>
+      <div class="player-score" id="rscore1">0</div>
+    </div>
+    <div class="player-card">
+      <div class="player-cat">🐾</div>
+      <div class="player-name" id="rscore-p2"></div>
+      <div class="player-score" id="rscore2">0</div>
+    </div>
+  </div>
+  <div class="two-col">
+    <button class="btn-main" onclick="nextRound()">Nova rodada</button>
+    <button class="btn-main" onclick="resetGame()">Reiniciar</button>
+  </div>
+</div>
+
+<script>
+var p1='', p2='', s1=0, s2=0, m1='', m2='', phase=1;
+var icons = {pedra:'🪨', papel:'📄', tesoura:'✂️'};
+
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function showRules(){ goTo('screen-rules'); }
+function startGame(){
+  p1 = document.getElementById('inp1').value.trim() || 'Jogador 1';
+  p2 = document.getElementById('inp2').value.trim() || 'Jogador 2';
+  s1=0; s2=0;
+  document.getElementById('display-p1').textContent = p1;
+  document.getElementById('display-p2').textContent = p2;
+  document.getElementById('score1').textContent = 0;
+  document.getElementById('score2').textContent = 0;
+  document.getElementById('rscore-p1').textContent = p1;
+  document.getElementById('rscore-p2').textContent = p2;
+  startRound();
+  goTo('screen-p1');
+}
+function startRound(){
+  m1=''; m2=''; phase=1;
+  document.querySelectorAll('.move-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('p1-label').textContent = p1 + ', escolha sua jogada:';
+  document.getElementById('p2-label').textContent = p2 + ', escolha sua jogada:';
+  document.getElementById('p2-section').style.display='none';
+  document.getElementById('btn-judge').style.display='none';
+  document.getElementById('dot1').classList.add('active');
+  document.getElementById('dot2').classList.remove('active');
+}
+function selectMove(player, move){
+  if(player===1 && phase===1){
+    m1=move;
+    document.querySelectorAll('.moves-grid')[0].querySelectorAll('.move-btn').forEach(b=>b.classList.remove('selected'));
+    event.currentTarget.classList.add('selected');
+    setTimeout(function(){
+      document.getElementById('p2-section').style.display='block';
+      document.getElementById('dot1').classList.remove('active');
+      document.getElementById('dot2').classList.add('active');
+      phase=2;
+    }, 300);
+  } else if(player===2 && phase===2){
+    m2=move;
+    document.querySelectorAll('.moves-grid')[1].querySelectorAll('.move-btn').forEach(b=>b.classList.remove('selected'));
+    event.currentTarget.classList.add('selected');
+    document.getElementById('btn-judge').style.display='block';
+  }
+}
+function judge(){
+  var winner='', title='', sub='';
+  if(m1===m2){ title='Empate! 🐾'; sub='Os dois gatinhos jogaram igual'; }
+  else if(
+    (m1==='pedra'&&m2==='tesoura')||
+    (m1==='papel'&&m2==='pedra')||
+    (m1==='tesoura'&&m2==='papel')
+  ){ s1++; title=p1+' ganhou! 🐱'; sub='Bom jogo, miau!'; winner='p1'; }
+  else { s2++; title=p2+' ganhou! 🐾'; sub='Bom jogo, miau!'; winner='p2'; }
+  document.getElementById('result-title').textContent=title;
+  document.getElementById('result-sub').textContent=sub;
+  document.getElementById('icon1').textContent=icons[m1];
+  document.getElementById('icon2').textContent=icons[m2];
+  document.getElementById('rname1').textContent=p1;
+  document.getElementById('rname2').textContent=p2;
+  document.getElementById('rscore1').textContent=s1;
+  document.getElementById('rscore2').textContent=s2;
+  document.getElementById('score1').textContent=s1;
+  document.getElementById('score2').textContent=s2;
+  goTo('screen-result');
+}
+function nextRound(){ goTo('screen-p1'); startRound(); }
+function resetGame(){
+  document.getElementById('inp1').value='';
+  document.getElementById('inp2').value='';
+  goTo('screen-names');
+}
+</script>
